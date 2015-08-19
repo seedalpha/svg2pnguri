@@ -4,6 +4,10 @@ Converting svg string into png datauri
 
 ### Changelog
 
+`1.0.1`:
+
+- update readme
+
 `1.0.0`:
 
 - project init
@@ -14,7 +18,7 @@ ImageMagick is required for the image conversion, follow [here](https://github.c
 
 ### Usage
 
-```
+```javascript
 var svg2png = require('svg2pnguri');
 svg2png('your svg string', function(err, pngUri) {
   console.log('Here is the png datauri:', pngUri);
