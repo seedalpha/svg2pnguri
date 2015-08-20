@@ -1,15 +1,87 @@
 var svg2pnguri = require('./');
 var assert = require('assert');
+var Readable = require('stream').Readable;
+var fs = require('fs');
 
-var input = '<svg version="1.1" width="20" height="20" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="red" /></svg>';
-var output = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUAQMAAAC3R49OAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABlBMVEX/AAD///9BHTQRAAAAAWJLR0QB/wIt3gAAAAxJREFUCNdjYKAuAAAAUAABIhPodQAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0wOC0yMFQxMzo1MzoxMiswODowMMhJhuwAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTUtMDgtMjBUMTM6NTM6MTIrMDg6MDC5FD5QAAAAAElFTkSuQmCC';
+var input   = fs.readFileSync(__dirname + '/test.svg').toString();
+var output  = fs.readFileSync(__dirname + '/test_png.datauri').toString();
+var outputGIF = fs.readFileSync(__dirname + '/test_gif.datauri').toString();
+var outputJPEG = fs.readFileSync(__dirname + '/test_jpeg.datauri').toString();
 
 describe('svg2pnguri', function() {
+  
   it('should convert svg to png data uri', function(done) {
     svg2pnguri(input, function(err, datauri) {
       assert(!err);
-      assert(datauri.trim() === datauri.trim());
+      assert.strictEqual(output, datauri);
       done();
     });
   });
+  
+  it('should convert svg buffer to png data uri', function(done) {
+    svg2pnguri(new Buffer(input), function(err, datauri) {
+      assert(!err);
+      assert.strictEqual(output, datauri);
+      done();
+    });
+  });
+  
+  
+  it('should convert svg readable stream to png data uri', function(done) {
+    var stream = new Readable();
+    svg2pnguri(stream, function(err, datauri) {
+      assert(!err);
+      assert.strictEqual(output, datauri);
+      done();
+    });
+
+    stream.push(input);
+    stream.push(null);
+  });
+
+  it('should support width and height options', function(done) {
+    svg2pnguri({
+      src: input,
+      width: 500,
+      height: 500
+    }, function(err, datauri) {
+      assert(!err);
+      assert(output !== datauri);
+      done();
+    });
+  });
+  
+  it('should support quality option', function(done) {
+    svg2pnguri({
+      src: input,
+      quality: 50
+    }, function(err, datauri) {
+      assert(!err);
+      assert(output !== datauri);
+      done();
+    });
+  });
+  
+  it('should support JPEG format', function(done) {
+    svg2pnguri({
+      src: input,
+      format: 'JPEG'
+    }, function(err, datauri) {
+      assert(!err);
+      assert(outputJPEG === datauri);
+      done();
+    });
+  });
+  
+  it('should support GIF format', function(done) {
+    svg2pnguri({
+      src: input,
+      format: 'GIF'
+    }, function(err, datauri) {
+      assert(!err);
+      assert(outputGIF === datauri);
+      done();
+    });
+  });
+  
 });

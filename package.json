@@ -1,6 +1,6 @@
 {
   "name": "svg2pnguri",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "converting svg into png datauri (requires ImageMagick)",
   "main": "index.js",
   "scripts": {
@@ -16,8 +16,8 @@
     "png",
     "datauri"
   ],
-  "author": "Marvin Lam <lam@seedalpha.net>",
-  "license": "©2015 SeedAlpha",
+  "author": "Marvin Lam <lam@seedalpha.net>, Vladimir Popov <vlad@seedalpha.net>",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/seedalpha/svg2pnguri/issues"
   },
@@ -25,7 +25,8 @@
   "dependencies": {
     "concat-stream": "1.5.0",
     "datauri": "0.7.1",
-    "imagemagick-native": "1.8.0"
+    "imagemagick-native": "1.8.0",
+    "isstream": "^0.1.2"
   },
   "devDependencies": {
     "mocha": "^2.2.5"
