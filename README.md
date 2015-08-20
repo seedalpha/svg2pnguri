@@ -4,6 +4,10 @@ Converting svg string into png datauri
 
 ### Changelog
 
+`1.0.2`:
+
+- test
+
 `1.0.1`:
 
 - update readme
