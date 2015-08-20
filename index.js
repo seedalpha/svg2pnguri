@@ -7,51 +7,12 @@
  */
 
 var isReadable  = require('isstream').isReadable;
+var toStream    = require('tostream');
+var datauri     = require('datauri-stream');
 var concat      = require('concat-stream');
 var imagemagick = require('imagemagick-native');
-var Datauri     = require('datauri');
-
-/**
- * Supported formats
- */
-
-var formats = {
-  'PNG': '.png',
-  'JPEG': '.jpg',
-  'GIF': '.gif'
-};
-
-/**
- * Buffer (of format) to datauri
- *
- * @param {String} format
- * @param {Buffer} buffer
- * @param {Function} callback(err, datauri)
- */
-
-function bufToDataUri(format, buffer, callback) {
-  var datauri = new Datauri();
-  try {
-    datauri.format(format, buffer);
-  } catch (e) {
-    return callback(e);
-  }
-  callback(null, datauri.content);
-}
-
-/**
- * Concat stream and convert to datauri
- *
- * @param {String} format
- * @param {Function} callback(err, datauri)
- * @return {Writeable} stream
- */
-
-function toDataUri(format, callback) {
-  return concat(function(buffer) {
-    bufToDataUri(format, buffer, callback);
-  });
-}
+var mime        = require('mime');
+var throughout  = require('throughout');
 
 /**
  * Check if options is raw `src`
@@ -62,6 +23,22 @@ function toDataUri(format, callback) {
 
 function isRaw(input) {
   return typeof input === 'string' || Buffer.isBuffer(input) || isReadable(input);
+}
+
+function defaults(obj, parent) {
+  for (var key in parent) {
+    if (typeof obj[key] === 'undefined') {
+      obj[key] = parent[key];
+    }
+  }
+  return obj;
+}
+
+var defaultOptions = {
+  format: 'PNG',
+  quality: 100,
+  srcFormat: 'SVG',
+  strip: true
 }
 
 /**
@@ -78,55 +55,33 @@ function isRaw(input) {
 
 function svg2pnguri(options, callback) {
   
-  // doesn't break existsing api
   if (isRaw(options)) {
     options = {
       src: options
     };
   }
   
-  var opts = {
-    format: options.format || 'PNG',
-    quality: options.quality || 100,
-    srcFormat: 'SVG',
-    strip: true
-  };
-  
-  var format = formats[opts.format];
-  
-  if (options.width) {
-    opts.width = options.width;
-  }
-  
-  if (options.height) {
-    opts.height = options.height;
-  }
-  
-  if (isReadable(options.src)) {
-    options.src
-      .pipe(imagemagick.streams.convert(opts))
-      .pipe(toDataUri(format, callback));
-  } else {
+  defaults(options, defaultOptions);
     
-    if (!options.src.length) {
-      return callback(new Error('options.src should not be empty'));
-    }
-    
-    if (Buffer.isBuffer(options.src)) {
-      opts.srcData = options.src;
-    } else if (typeof options.src === 'string') {
-      opts.srcData = new Buffer(options.src);
-    } else {
-      process.nextTick(function() {
-        callback(new Error('options.src should be a string, buffer or readable stream'));
-      });
-    }
-    
-    imagemagick.convert(opts, function(err, buffer) {
-      if (err) return callback(err);
-      bufToDataUri(format, buffer, callback);
-    });
-  }  
+  toStream(options.src)
+    .pipe(imagemagick.streams.convert(options))
+    .pipe(datauri({ mime: mime.lookup(options.format) }))
+    .pipe(concat(function(buffer) {
+      callback(null, buffer.toString());
+    }));
+}
+
+/**
+ * Streaming inteface
+ */
+
+svg2pnguri.stream = function(options) {
+  
+  options = options || {};
+  
+  defaults(options, defaultOptions);
+  
+  return throughout(imagemagick.streams.convert(options), datauri({ mime: mime.lookup(options.format) }));
 }
 
 /**

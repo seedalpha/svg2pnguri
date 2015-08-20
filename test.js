@@ -2,6 +2,7 @@ var svg2pnguri = require('./');
 var assert = require('assert');
 var Readable = require('stream').Readable;
 var fs = require('fs');
+var concat = require('concat-stream');
 
 var input   = fs.readFileSync(__dirname + '/test.svg').toString();
 var output  = fs.readFileSync(__dirname + '/test_png.datauri').toString();
@@ -84,4 +85,12 @@ describe('svg2pnguri', function() {
     });
   });
   
+  it('should use streaming interface', function(done) {
+    fs.createReadStream(__dirname + '/test.svg')
+      .pipe(svg2pnguri.stream())
+      .pipe(concat(function(buffer) {
+        assert(buffer.toString() === output);
+        done();
+      }));
+  });
 });
