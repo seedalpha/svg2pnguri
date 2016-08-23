@@ -4,12 +4,16 @@ Converting svg string into png datauri
 
 ### Changelog
 
+`1.3.0`:
+
+- support node above 0.12.0
+
 `1.2.0`:
 
 - add streaming interface
 
 `1.1.0`:
-  
+
 - support `JPEG` format
 - support `GIF` format
 - support custom `width` and `height`
@@ -65,7 +69,7 @@ fs.createReadStream('./file.svg')
 #### svg2png(options, callback):void
 
 Options:
-    
+
     src: String || Buffer || Stream
     width: Number, optional, width in pixels, defaults to svg width
     height: Number, optional, height in pixels, defaults to svg height
@@ -73,7 +77,7 @@ Options:
     quality: Number, optional, intermediary conversion quality (0-100), defaults to 100
 
 Callback:
-    
+
     err: Conversion error
     result: Datauri string
 
